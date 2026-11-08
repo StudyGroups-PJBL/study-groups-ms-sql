@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import amqp, { Channel, ChannelModel } from 'amqplib';
 import { IEventPublisher } from '../../domain/events/IEventPublisher';
 import { environment } from '../config/environment';
@@ -49,12 +50,17 @@ export class RabbitMqPublisher implements IEventPublisher {
 
   public async publish<T>(eventName: string, payload: T): Promise<void> {
     const routingKey = eventName || 'task.status.changed';
+    const nowIso = new Date().toISOString();
     const messageBuffer = Buffer.from(
       JSON.stringify({
+        eventId: randomUUID(),
         event: routingKey,
+        eventType: routingKey,
         exchange: this.exchangeName,
-        timestamp: new Date().toISOString(),
-        data: payload
+        timestamp: nowIso,
+        occurredAt: nowIso,
+        data: payload,
+        payload
       })
     );
 
